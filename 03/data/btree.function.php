@@ -202,9 +202,85 @@ function getOmsetTerkecil($data, $result = null) {
     return $result;
 }
 
+function getMemberTerdalam($data, $sisi = 'kiri') {
+    
+    $senarai = getSenarai($data);
+
+    // urutkan tinggi ke rendah berdasarkan omset
+    function cmpByOmset($a, $b)
+    {
+        if ($a['omsetAll'] == $b['omsetAll']) {
+            return 0;
+        }
+        
+        return ($a['omsetAll'] < $b['omsetAll']) ? -1 : 1;
+    }
+
+    usort($senarai, "cmpByOmset");
+
+    // ambil member dengan level terdalam
+    $result = array();    
+    foreach($senarai as $v) {
+        if(empty($result))
+            $result[] = $v;
+        else {
+            if($v['omsetAll'] < $result[0]['omsetAll'])
+                $result = array($v);
+            else if($v['omsetAll'] == $result[0]['omsetAll'])
+                $result[] = $v;
+        }
+    }
+
+    // jika hasil lebih dari satu, ambil sisi terkiri / terkanan sesuai param
+    if(count($result) > 1) {
+        // urutkan berdasarkan id
+        function cmpByLvl($a, $b)
+        {
+            if ($a['level'] == $b['level']) {
+                return 0;
+            }
+            return ($a['level'] > $b['level']) ? -1 : 1;
+        }
+
+        usort($result, "cmpByLvl");
+
+        if($sisi == 'kiri')
+            $result = array($result[count($result)-1]);
+        else
+            $result = array($result[0]);
+    }
+    
+    return $result[0];
+}
+
 function getSpillOverMember($data, $id = 0, $sisi = 'kiri') {    
     $btree = getBTree($data, $id);
-    return getOmsetTerkecil($btree);
+   
+    if(!empty($btree)) {
+        if(!empty($btree[0]['children'])) {
+            $temp = [];
+
+            foreach($btree[0]['children'] as $v) {
+                if(empty($temp)) {
+                    $temp = $v;
+                }
+                else {
+                    if($v['omsetAll'] < $temp['omsetAll']) {
+                        $temp = $v;
+                    }
+                    else if($v['omsetAll'] == $temp['omsetAll']) {
+                        if($v['prioritas'] > $temp['prioritas']) {
+                            $temp = $v;
+                        }
+                    }
+                }
+            }
+
+            $btree = getBTree($data, $temp['id']);
+        }
+    }
+
+    return getMemberTerdalam($btree, $sisi);
 }
 
 function getSpillOverMember2($data, $id = 0, $sisi = 'kiri') {
