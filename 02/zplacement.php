@@ -1,6 +1,6 @@
 <?php
 
-require './data/btree.function.php';
+require './data/btree.placement.function.php';
 //'localhost', 'u7154823_api', '2bXJtm_x=1;%', 'u7154823_api'
 try {
     $dbh = new PDO('mysql:host=localhost;dbname=u7154823_api', 'u7154823_api', '2bXJtm_x=1;%');
@@ -16,8 +16,7 @@ try {
     
     $dbh = null;    
     
-    $result = getSpillOverMember($members, empty($_GET['id']) ? 0 : $_GET['id'], empty($_GET['sisi']) ? 'kiri' : $_GET['sisi']);
-    //$result = placementKecil($membersPlacement, empty($_GET['id']) ? 0 : $_GET['id'], empty($_GET['sisi']) ? 'kiri' : $_GET['sisi']);
+    $result = getPlacement($members, empty($_GET['id']) ? 0 : $_GET['id'], empty($_GET['sisi']) ? 'kiri' : $_GET['sisi']);
 
     $btree = getBTree($members, empty($_GET['id']) ? 0 : $_GET['id']);
     

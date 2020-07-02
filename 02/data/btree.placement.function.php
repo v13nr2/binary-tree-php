@@ -39,6 +39,8 @@ function hitungSisiOmset ($data, $indukId, $sisi, $initLvl = 0, $jumlah = 0){
 }
 
 function getBTree($data, $id = 0) {
+    $kedalaman = 1;
+    $postingdi = "AA";
     $indukId = 0;
     $result = array();
 
@@ -56,6 +58,18 @@ function getBTree($data, $id = 0) {
                 $omsetKanan = hitungSisiOmset($data, $v['id'], 'kanan');
                 $omsetKiri = hitungSisiOmset($data, $v['id'], 'kiri');
 
+
+
+                
+                
+                if($result[0]["header_posting_di"]==$v['sisi']){
+                    $end_user_placement = $v["id"];
+                }
+                
+                if($v['sisi']=="kanan" && $level == 2){
+                    break;
+                }
+                
                 $result[] = [
                     'id'=>$v['id'],
                     'nomor'=>$v['nomor'],
@@ -73,16 +87,16 @@ function getBTree($data, $id = 0) {
                     'omsetKiri'=>$omsetKiri,
                     'omsetKanan'=>$omsetKanan,
                     'omsetAll'=>$omsetKiri+$omsetKanan,
-                    'contents'=>'<img src="./Images/' . $v['foto'] .'" class="img-btree" data-id="' . $v['id'] . '" style="width:auto;height:125px"/><br/>
-                                 <span>' . $kiri . ' | ' . $kanan . ' </span><br>
-                                 <span>' . $omsetKiri . ' | ' . $omsetKanan . ' </span><br>
-                                 <label>' . $v['nomor'] . '</label>
-                                 <h4>' . $v['nama'] .'</h4>',
-                    'children'=>empty($children) ? null : $children
+                    'children'=>empty($children) ? null : $children,
+                    'header_posting_di' => $postingdi,
+                    'kedalaman' => $kedalaman,
+                    'end_user_placement'    => $end_user_placement
                 ];
             }
+            
+            
+            $kedalaman++;
         }
-
         return $result;
     };
 
@@ -96,8 +110,37 @@ function getBTree($data, $id = 0) {
                 $kanan = hitungSisi($data, $v['id'], 'kanan');
                 $kiri  = hitungSisi($data, $v['id'], 'kiri');
                 
-                $omsetKanan = hitungSisiOmset($data, $v['omset'], 'kanan',0, $v['omset']);
-                $omsetKiri = hitungSisiOmset($data, $v['omset'], 'kiri',0, $v['omset']);
+                //$omsetKanan = hitungSisiOmset($data, $v['omset'], 'kanan',0, $v['omset']);
+                //$omsetKiri = hitungSisiOmset($data, $v['omset'], 'kiri',0, $v['omset']);
+                
+                $omsetKanan = hitungSisiOmset($data, $v['id'], 'kanan');
+                $omsetKiri = hitungSisiOmset($data, $v['id'], 'kiri');
+                
+                
+                if($omsetKiri == $omsetKanan){
+                    //die("Posing di Kiri");
+                    $a=$result;;
+                    array_push($a,"Posing di Kiri","Posing di Kiri");
+                    $postingdi  = "kiri";
+
+                }
+                if($omsetKiri > $omsetKanan){
+                    //die("Posing di Kanan");
+                    $a=$result;;
+                    array_push($a,"Posing di Kanan","Posing di Kanan");
+                    $postingdi  = "kanan";
+                }
+                if($omsetKiri < $omsetKanan){
+                    //die("Posing di Kanan");
+                    $a=$result;;
+                    array_push($a,"Posing di Kiri","Posing di Kiri");
+                    $postingdi  = "kiri";
+                }
+                
+                if($result[0]["header_posting_di"]==$v['sisi']){
+                    $end_user_placement = $v["id"];
+                }
+                
                 
                 $result[0] = [
                     'id'=>$v['id'],
@@ -116,14 +159,19 @@ function getBTree($data, $id = 0) {
                     'omsetKiri'=>$omsetKiri,
                     'omsetKanan'=>$omsetKanan,
                     'omsetAll'=>$omsetKiri+$omsetKanan,
-                    'contents'=>'<img src="./Images/' . $v['foto'] .'" class="img-btree" data-id="' . $v['id'] . '" style="width:auto;height:125px"/><br/>
-                                    <span>' . $kiri . ' | ' . $kanan . ' </span><br>
-                                 <span>' . $omsetKiri . ' | ' . $omsetKanan . ' </span><br>
-                                    <label>' . $v['nomor'] . '</label>
-                                    <h4>' . $v['nama'] .'</h4>'
+                    'header_posting_di' => $postingdi,
+                    'kedalaman' => $kedalaman
                     ];
+                    
+                    
+                    
+                if($v['sisi']=="kanan" && $level == 1){
+                    break;
+                }
             }
         }
+        
+                
 
         $result[0]['children'] = $adjust($data, $indukId, 1);
     }
@@ -185,13 +233,13 @@ function getOmsetTerkecil($data, $result = null) {
             $result = $v;
         }
         else {
-            if($result['omsetAll'] == $v['omsetAll']) {
-                if( $result['prioritas'] < $v['prioritas'] )
-                    $result = $v;
-                else
-                    $result = $v;
-            }
-            else if($result['omsetAll'] > $v['omsetAll']) { 
+            // if($result['omsetAll'] == $v['omsetAll']) {
+            //     if( $result['prioritas'] < $v['prioritas'] )
+            //         $result = $v;
+            //     else
+            //         $result = $v;
+            // }
+            if($result['omsetAll'] > $v['omsetAll']) { 
                 $result = $v;
             }
         }
@@ -256,67 +304,6 @@ function getMemberTerdalam($data, $sisi = 'kiri') {
 }
 
 function getSpillOverMember($data, $id = 0, $sisi = 'kiri') {    
-
-    $btree = getBTree($data, $id);
-    $result = [];
-    // echo '<pre>';
-    // print_r($btree);
-    // echo '</pre>';
-    // die();
-    $cariMember = function($data, $result = []) use (&$cariMember) {
-        
-        foreach($data as $v) {
-            if(empty($v['children'])) {
-                return $v;
-            } else {
-                if($v['kiri'] != $v['kanan']) {
-                    if($v['kiri'] < $v['kanan']) {
-                        $sisi = 'kiri';
-                    }
-                    else if($v['kiri'] > $v['kanan']) {
-                        $sisi = 'kanan'; 
-                    }
-
-                    if($v[$sisi] < 1) {
-                        $v['posisi_di'] = $sisi;
-                        $v['children'] = [];
-                        $result = $v;
-                    } else {
-                        if(!empty($v['children'])) {
-                            foreach($v['children'] as $vv) {
-                                if($vv['sisi'] == $sisi)
-                                    return $cariMember($vv);
-                            }
-                        }
-                    }
-                }
-                else {
-                    if(count($v['children']) < 1 ) {
-                        $v['posisi_di'] = 'kiri';
-                        return $cariMember($v['children']);
-                    }
-                    else {
-                        if($v['sisi'] == 'kiri') {
-                            $v['posisi_di'] = 'kanan';
-                            return $cariMember($v['children']);
-                        }
-                    }
-                }
-            }
-        }
-
-        return $result;
-    };
-
-    $result = $cariMember($btree);
-    echo '<pre>';
-    print_r($result);
-    echo '</pre>';
-    die();
-    return $result;
-}
-
-function getSpillOverMember1($data, $id = 0, $sisi = 'kiri') {    
     $btree = getBTree($data, $id);
    
     if(!empty($btree)) {
@@ -343,27 +330,46 @@ function getSpillOverMember1($data, $id = 0, $sisi = 'kiri') {
         }
     }
 
-    $member = getMemberTerdalam($btree, $sisi);
+    return getMemberTerdalam($btree, $sisi);
+}
 
-    $senarai = getSenarai(getBTree($data));
-    $member['posisi_di'] = 'kiri';
-    $memberIndukId = $member['induk_id'];
-    
-    foreach($senarai as $v) {
-        if($memberIndukId == $v['id']){           
-           if(empty($v['kiri'])) {
-             $v['posisi_di'] = 'kiri';
-             $member = $v;
-           }
-           else if(empty($v['kanan'])) {
-             $v['posisi_di'] = 'kanan';
-             $member = $v;
-           }
+
+
+function getPlacement($data, $id = 0, $sisi = 'kiri') {    
+    $btree = getBTree($data, $id);
+   
+    if(!empty($btree)) {
+        if(!empty($btree[0]['children'])) {
+            $temp = [];
+
+            foreach($btree[0]['children'] as $v) {
+                if(empty($temp)) {
+                    $temp = $v;
+                }
+                else {
+                    if($v['omsetAll'] < $temp['omsetAll']) {
+                        $temp = $v;
+                    }
+                    else if($v['omsetAll'] == $temp['omsetAll']) {
+                        //salah if($v['prioritas'] > $temp['prioritas']) {
+                            
+                        if($v['prioritas'] < $temp['prioritas']) {
+                            $temp = $v;
+                        }
+                    }
+                }
+            }
+
+            $btree = getBTree($data, $temp['id']);
         }
     }
+    
 
-    return $member;
+    // placement dulu baru member terdalam ==== return getMemberTerdalam($btree, $sisi);
+    return getOmsetTerkecil($btree);
 }
+
+
 
 function getSpillOverMember2($data, $id = 0, $sisi = 'kiri') {
     $result = [];

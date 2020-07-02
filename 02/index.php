@@ -1,12 +1,7 @@
-﻿<?php
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-?><!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Binary Tree</title>
+    <title>Binary Tree DeMoneyBox</title>
     <link href="Themes/smoothness/jquery-ui-1.10.4.custom.min.css" rel="stylesheet" />
     <link href="CSS/jHTree.css" rel="stylesheet" />
     <script src="js/jquery-1.10.2.js"></script>
