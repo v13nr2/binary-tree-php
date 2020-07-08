@@ -1,8 +1,10 @@
 <?php 
 
+//$conn = new mysqli('localhost', 'u7154823_api', '2bXJtm_x=1;%', 'u7154823_api');
+
 
 try {
-    $dbh = new PDO('mysql:host=localhost;dbname=binari', 'root', '');
+    $dbh = new PDO('mysql:host=localhost;dbname=', '', '=1;%');
     $members = array();
     foreach($dbh->query('SELECT * from nng_members ORDER BY id ASC') as $row) {
         array_push($members, $row);

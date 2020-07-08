@@ -1,6 +1,6 @@
 <?php
 
-require './data/btree.function.php';
+require './data/to-top.php';
 
 try {
     $dbh = new PDO('mysql:host=localhost;dbname=', '', ')kY%');
@@ -12,11 +12,11 @@ try {
 
     $result = goToTop($members, empty($_GET['id']) ? 0 : $_GET['id']);
 
-    //echo '<pre>';
-    //print_r($result);
-    //echo '</pre>';
+    echo '<pre>';
+    print_r($result);
+    echo '</pre>';
 
-    echo json_encode($result);
+    //echo json_encode($result);
 
 } catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";

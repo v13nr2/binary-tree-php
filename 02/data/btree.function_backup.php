@@ -287,8 +287,7 @@ function getSpillOverMember($data, $id = 0, $sisi = 'kiri') {
                         if(!empty($v['children'])) {
                             foreach($v['children'] as $vv) {
                                 if($vv['sisi'] == $sisi)
-                                    //return $cariMember(array($vv));
-                                    return getMemberTerdalam(array($vv), $sisi);
+                                    return $cariMember(array($vv));
                             }
                         }
                     }
@@ -297,14 +296,12 @@ function getSpillOverMember($data, $id = 0, $sisi = 'kiri') {
                     if(count($v['children']) > 1 ) {
                         foreach($v['children'] as $vv) {
                             if($vv['sisi'] == 'kiri')
-                                //return $cariMember(array($vv));
-                                 return getMemberTerdalam(array($vv), $sisi);
+                                return $cariMember(array($vv));
                         }
                         
                     }
                     else {                       
-                        //return $cariMember($v['children']);
-                        return getMemberTerdalam($v['children'], $sisi);
+                        return $cariMember($v['children']);
                     }
                 }
             }
@@ -320,48 +317,7 @@ function getSpillOverMember($data, $id = 0, $sisi = 'kiri') {
     else
         $result['posisi_di'] = 'kiri';    
 
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-    $member = getMemberTerdalam($result, $sisi);
-
-    $senarai = getSenarai(getBTree($data));
-    $member['posisi_di'] = 'kiri';
-    $memberIndukId = $member['induk_id'];
-    
-    foreach($senarai as $v) {
-        if($memberIndukId == $v['id']){           
-           if(empty($v['kiri'])) {
-             $v['posisi_di'] = 'kiri';
-             $member = $v;
-           }
-           else if(empty($v['kanan'])) {
-             $v['posisi_di'] = 'kanan';
-             $member = $v;
-           }
-        }
-    }
-
-    return $member;
-   */ 
-
-
-
     return $result;
-    
-    
 }
 
 function getSpillOverMember1($data, $id = 0, $sisi = 'kiri') {    

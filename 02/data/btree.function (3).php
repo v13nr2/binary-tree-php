@@ -41,21 +41,25 @@ function hitungSisiOmset ($data, $indukId, $sisi, $initLvl = 0, $jumlah = 0){
 function getBTree($data, $id = 0) {
     $indukId = 0;
     $result = array();
-
+ 
     $adjust = function($data, $indukId, $level = 0) use (&$adjust) {
         $result = array();
 
         foreach($data as $v) {
             if($v['induk_id'] == $indukId) {
                 $children = $adjust($data, $v['id'], $level+1);
+                // inisialisasi semua omset
                 $omsetKanan = $omsetKiri = $kanan = $kiri = 0;
 
+                // hitung jumlah anak di setiap sisi
                 $kanan = hitungSisi($data, $v['id'], 'kanan');
                 $kiri  = hitungSisi($data, $v['id'], 'kiri');
                 
+                // hitung omset dari anak di setiap sisi
                 $omsetKanan = hitungSisiOmset($data, $v['id'], 'kanan');
                 $omsetKiri = hitungSisiOmset($data, $v['id'], 'kiri');
 
+                // susun attribut array
                 $result[] = [
                     'id'=>$v['id'],
                     'nomor'=>$v['nomor'],
@@ -73,6 +77,7 @@ function getBTree($data, $id = 0) {
                     'omsetKiri'=>$omsetKiri,
                     'omsetKanan'=>$omsetKanan,
                     'omsetAll'=>$omsetKiri+$omsetKanan,
+                    // set konten untuk ditampilkan di html
                     'contents'=>'<img src="./Images/' . $v['foto'] .'" class="img-btree" data-id="' . $v['id'] . '" style="width:auto;height:125px"/><br/>
                                  <span>' . $kiri . ' | ' . $kanan . ' </span><br>
                                  <span>' . $omsetKiri . ' | ' . $omsetKanan . ' </span><br>
@@ -86,6 +91,7 @@ function getBTree($data, $id = 0) {
         return $result;
     };
 
+    // jika memiliki id, set data awal
     if(!empty($id)) {
         foreach($data as $v) {
             if($v['id'] == $id) {
@@ -93,9 +99,11 @@ function getBTree($data, $id = 0) {
 
                 $omsetKanan = $omsetKiri = $kanan = $kiri = 0;
 
+                // hitung jumlah anak di setiap sisi
                 $kanan = hitungSisi($data, $v['id'], 'kanan');
                 $kiri  = hitungSisi($data, $v['id'], 'kiri');
                 
+                // hitung jumlah omset anak di setiap sisi
                 $omsetKanan = hitungSisiOmset($data, $v['id'], 'kanan');
                 $omsetKiri = hitungSisiOmset($data, $v['id'], 'kiri');
                 
@@ -125,9 +133,11 @@ function getBTree($data, $id = 0) {
             }
         }
 
+        // susun member dari data sebagai anak
         $result[0]['children'] = $adjust($data, $indukId, 1);
     }
     else {
+        // susun member dari data
         $result = $adjust($data, $indukId);
     }
 
@@ -257,58 +267,57 @@ function getMemberTerdalam($data, $sisi = 'kiri') {
 
 function getSpillOverMember($data, $id = 0, $sisi = 'kiri') {    
 
+    // susun data menjadi tree
     $btree = getBTree($data, $id);
     $result = [];
-    // echo '<pre>';
-    // print_r($btree);
-    // echo '</pre>';
-    // die();
+    
+    // cari member sebagai induk
     $cariMember = function($data, $result = []) use (&$cariMember) {
         $v = $data[0];
-        // foreach($data as $v) {
-            if(empty($v['children'])) {
-                $result = $v;
-            } else {
-                if($v['omsetKiri'] != $v['omsetKanan']) {
-                    
-                    if($v['omsetKiri'] < $v['omsetKanan']) {
-                        $sisi = 'kiri';
-                    }
-                    else if($v['omsetKiri'] > $v['omsetKanan']) {
-                        $sisi = 'kanan'; 
-                    }
 
-                    //echo $v['id'] . ' ' . $v['omsetKiri'] . ' ' . $v['omsetKanan'] . ' ' . $sisi . '<br>';
-
-                    if($v[$sisi] < 1) {
-                        $v['children'] = [];
-                        $result = $v;
-                    } else {
-                        if(!empty($v['children'])) {
-                            foreach($v['children'] as $vv) {
-                                if($vv['sisi'] == $sisi)
-                                    //return $cariMember(array($vv));
-                                    return getMemberTerdalam(array($vv), $sisi);
-                            }
-                        }
-                    }
+        // jika data tidak memiliki member, berarti pencarian terhenti
+        if(empty($v['children'])) {
+            $result = $v;
+        } else {
+            // jika omset kanan kiri tidak sama, cari berdasarkan omset
+            if($v['omsetKiri'] != $v['omsetKanan']) {
+                
+                if($v['omsetKiri'] < $v['omsetKanan']) {
+                    $sisi = 'kiri';
                 }
-                else {
-                    if(count($v['children']) > 1 ) {
+                else if($v['omsetKiri'] > $v['omsetKanan']) {
+                    $sisi = 'kanan'; 
+                }
+
+                // jika sisi tersebut kosong, berarti di sisi ini member akan ditempatkan
+                if($v[$sisi] < 1) {
+                    $v['children'] = [];
+                    $result = $v;
+                } else {
+                    // jika memiliki lebih dari 1 member maka, cari lebih dalam berdasarkan member dengan sisi tersebut
+                    if(!empty($v['children'])) {
                         foreach($v['children'] as $vv) {
-                            if($vv['sisi'] == 'kiri')
-                                //return $cariMember(array($vv));
-                                 return getMemberTerdalam(array($vv), $sisi);
+                            if($vv['sisi'] == $sisi)
+                                return $cariMember(array($vv));
                         }
-                        
-                    }
-                    else {                       
-                        //return $cariMember($v['children']);
-                        return getMemberTerdalam($v['children'], $sisi);
                     }
                 }
             }
-        // }
+            else {
+                // jika memiliki member lebih dari satu dan memiliki member di sisi kiri, ulangi pencarian
+                if(count($v['children']) > 1 ) {
+                    foreach($v['children'] as $vv) {
+                        if($vv['sisi'] == 'kiri')
+                            return $cariMember(array($vv));
+                    }
+                    
+                }
+                else {                       
+                    // jika tidak memiliki member, kembalikan $v['children'] sebagai pencarian akhir
+                    return $cariMember($v['children']);
+                }
+            }
+        }
 
         return $result;
     };
@@ -320,48 +329,7 @@ function getSpillOverMember($data, $id = 0, $sisi = 'kiri') {
     else
         $result['posisi_di'] = 'kiri';    
 
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-    $member = getMemberTerdalam($result, $sisi);
-
-    $senarai = getSenarai(getBTree($data));
-    $member['posisi_di'] = 'kiri';
-    $memberIndukId = $member['induk_id'];
-    
-    foreach($senarai as $v) {
-        if($memberIndukId == $v['id']){           
-           if(empty($v['kiri'])) {
-             $v['posisi_di'] = 'kiri';
-             $member = $v;
-           }
-           else if(empty($v['kanan'])) {
-             $v['posisi_di'] = 'kanan';
-             $member = $v;
-           }
-        }
-    }
-
-    return $member;
-   */ 
-
-
-
     return $result;
-    
-    
 }
 
 function getSpillOverMember1($data, $id = 0, $sisi = 'kiri') {    

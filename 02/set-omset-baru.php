@@ -1,6 +1,6 @@
 <?php
 
-require './data/btree.function.php';
+require './data/btree.function.setomsetbaru.php';
 
 try {
     $dbh = new PDO('mysql:host=localhost;dbname=', '', ')kY%');
@@ -10,14 +10,14 @@ try {
     }
     $dbh = null; 
 
-    $result = goToTop($members, empty($_GET['id']) ? 0 : $_GET['id']);
+    $result = setOmsetBaru($members, empty($_GET['id']) ? 0 : $_GET['id']);
 
-    //echo '<pre>';
-    //print_r($result);
-    //echo '</pre>';
+    // echo '<pre>';
+    // print_r($result);
+    // echo '</pre>';
 
     echo json_encode($result);
-
+ 
 } catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();

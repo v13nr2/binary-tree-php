@@ -41,7 +41,7 @@ function hitungSisiOmset ($data, $indukId, $sisi, $initLvl = 0, $jumlah = 0){
 }
 
 try {
-    $dbh = new PDO('mysql:host=localhost;dbname=u7154823_api', 'u7154823_api', '2bXJtm_x=1;%');
+    $dbh = new PDO('mysql:host=localhost;dbname=u7154823_api', 'u7154823_api', 'LPw_eHtQ)kY%');
     $members = array();
     foreach($dbh->query('SELECT * from nng_members ORDER BY sisi DESC, id ASC') as $row) {
         array_push($members, $row);
